@@ -64,6 +64,22 @@ enum TraceGuideLevel: String, CaseIterable {
     }
 }
 
+// MARK: - 연습 모드
+
+enum WritingMode: String, CaseIterable {
+    /// 뜻과 읽기만 보고 한자를 떠올려 쓴다 (인출 연습)
+    case quiz
+    /// 밑글자를 따라 쓴다 (형태 익히기)
+    case trace
+
+    var label: String {
+        switch self {
+        case .quiz:  return "문제 풀기"
+        case .trace: return "따라 쓰기"
+        }
+    }
+}
+
 // MARK: - Kanji Writing View
 
 struct KanjiWritingView: View {
@@ -77,6 +93,11 @@ struct KanjiWritingView: View {
     @State private var strokePlayToken = 0
     // 글자마다 껐다 켜는 힌트가 아니라 «연습 방식» 설정이므로 앱을 다시 켜도 유지한다
     @AppStorage("kanjiTraceGuide") private var guideRaw = TraceGuideLevel.faint.rawValue
+    @AppStorage("kanjiWritingMode") private var modeRaw = WritingMode.quiz.rawValue
+    /// 문제 모드에서 정답을 공개했는지
+    @State private var revealed = false
+    /// 스텝별 자기 채점 결과
+    @State private var results: [UUID: Bool] = [:]
     @State private var sessionDone = false
 
     // 한 글자씩 쓰므로 캔버스는 하나만 유지한다. makeUIView는 한 번만 호출되므로
@@ -103,6 +124,16 @@ struct KanjiWritingView: View {
         TraceGuideLevel(rawValue: guideRaw) ?? .faint
     }
 
+    private var mode: WritingMode {
+        WritingMode(rawValue: modeRaw) ?? .quiz
+    }
+
+    /// 정답(밑글자·획순·획수)을 보여줘도 되는 시점.
+    /// 문제 모드에서는 답을 확인하기 전까지 모두 감춘다.
+    private var answerVisible: Bool {
+        mode == .trace || revealed
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -114,6 +145,7 @@ struct KanjiWritingView: View {
                     VStack(spacing: 0) {
                         header(step)
                         progressBar
+                        modePicker
                         canvasArea(step)
                         controls
                         strokeCredit
@@ -135,14 +167,14 @@ struct KanjiWritingView: View {
     private func header(_ step: WritingStep) -> some View {
         VStack(spacing: 8) {
             HStack {
-                // 단어 전체를 보여주되 지금 쓸 글자만 강조
+                // 단어 전체를 보여주되 지금 쓸 글자만 강조.
+                // 문제 모드에서는 그 글자를 «〇»로 가려 뜻과 읽기만으로 떠올리게 한다.
                 HStack(spacing: 0) {
                     ForEach(Array(step.card.front.enumerated()), id: \.offset) { offset, ch in
-                        Text(String(ch))
+                        let isTarget = offset == step.charOffset
+                        Text(isTarget && !answerVisible ? "〇" : String(ch))
                             .font(.system(size: 30, weight: .black))
-                            .foregroundStyle(offset == step.charOffset
-                                             ? Theme.brand
-                                             : Theme.textQuaternary)
+                            .foregroundStyle(isTarget ? Theme.brand : Theme.textQuaternary)
                     }
                 }
                 Text("  \(step.card.reading)")
@@ -161,8 +193,9 @@ struct KanjiWritingView: View {
                 if step.kanjiCount > 1 {
                     chip("한자 \(step.kanjiCount)자 중 \(step.kanjiIndex + 1)번째")
                 }
+                // 획수는 답에 대한 힌트이므로 문제 모드에서는 확인 후에 보여준다
                 let strokes = KanjiStrokes.strokeCount(for: step.kanji)
-                if strokes > 0 {
+                if strokes > 0, answerVisible {
                     chip("\(strokes)획")
                 }
             }
@@ -179,6 +212,24 @@ struct KanjiWritingView: View {
             .padding(.horizontal, 8).padding(.vertical, 3)
             .background(Theme.brand.opacity(0.14))
             .clipShape(Capsule())
+    }
+
+    private var modePicker: some View {
+        Picker("연습 모드", selection: Binding(
+            get: { mode },
+            set: { newValue in
+                modeRaw = newValue.rawValue
+                revealed = false
+                isPlayingStrokes = false
+            }
+        )) {
+            ForEach(WritingMode.allCases, id: \.rawValue) { m in
+                Text(m.label).tag(m)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
     }
 
     private var progressBar: some View {
@@ -209,7 +260,7 @@ struct KanjiWritingView: View {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Theme.canvasCell)
                 GridGuide(size: box)
-                if guide != .off {
+                if guide != .off, answerVisible {
                     Text(String(step.kanji))
                         .font(.system(size: box * 0.74, weight: .medium))
                         .foregroundStyle(Theme.textPrimary.opacity(guide.opacity))
@@ -224,7 +275,7 @@ struct KanjiWritingView: View {
                 CanvasWrapper(canvas: canvas, isErasing: isErasing)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
 
-                if KanjiStrokes.hasData(for: step.kanji) {
+                if KanjiStrokes.hasData(for: step.kanji), answerVisible {
                     strokeOrderButton(step.kanji)
                         .frame(maxWidth: .infinity, maxHeight: .infinity,
                                alignment: .topTrailing)
@@ -258,29 +309,24 @@ struct KanjiWritingView: View {
     // MARK: - Controls
 
     private var controls: some View {
+        Group {
+            switch mode {
+            case .trace:
+                traceControls
+            case .quiz:
+                revealed ? AnyView(gradingControls) : AnyView(answeringControls)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
+    }
+
+    /// 따라 쓰기: 밑글자를 보며 그대로 옮겨 쓴다
+    private var traceControls: some View {
         HStack(spacing: 8) {
-            // 이전 글자
-            ctrlBtn(icon: "chevron.left", label: "이전",
-                    tint: stepIndex > 0 ? Theme.textSecondary : Theme.textQuaternary,
-                    bg: Theme.surfaceSoft) {
-                goTo(stepIndex - 1)
-            }
-            .disabled(stepIndex == 0)
-
-            // 현재 글자 지우기
-            ctrlBtn(icon: "trash", label: "지우기",
-                    tint: Theme.textSecondary,
-                    bg: Theme.surfaceSoft) {
-                clearCurrent()
-            }
-
-            // 지우개 토글
-            ctrlBtn(icon: isErasing ? "pencil" : "eraser",
-                    label: isErasing ? "펜" : "지우개",
-                    tint: isErasing ? Theme.brand : Theme.textPrimary,
-                    bg: isErasing ? Theme.brand.opacity(0.15) : Theme.surfaceSoft) {
-                isErasing.toggle()
-            }
+            prevButton
+            clearButton
+            eraserButton
 
             // 밑글자 진하기 (흐리게 → 진하게 → 없음)
             ctrlBtn(icon: guide.icon,
@@ -291,7 +337,6 @@ struct KanjiWritingView: View {
                 guideRaw = guide.next.rawValue
             }
 
-            // 다음 글자
             ctrlBtn(icon: isLastStep ? "checkmark" : "chevron.right",
                     label: isLastStep ? "완료" : "다음",
                     tint: Theme.onBrand,
@@ -299,8 +344,66 @@ struct KanjiWritingView: View {
                 advance()
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 4)
+    }
+
+    /// 문제 풀기 — 답을 쓰는 중
+    private var answeringControls: some View {
+        HStack(spacing: 8) {
+            prevButton
+            clearButton
+            eraserButton
+
+            wideBtn(icon: "eye.fill", label: "정답 확인",
+                    tint: Theme.onBrand, bg: Theme.brand) {
+                withAnimation(.easeInOut(duration: 0.2)) { revealed = true }
+            }
+        }
+    }
+
+    /// 문제 풀기 — 답을 보고 스스로 채점
+    private var gradingControls: some View {
+        HStack(spacing: 8) {
+            prevButton
+            clearButton
+
+            wideBtn(icon: "xmark", label: "틀림",
+                    tint: Color(accentHex: "DC2626"),
+                    bg: Color(accentHex: "DC2626").opacity(0.15)) {
+                grade(false)
+            }
+
+            wideBtn(icon: isLastStep ? "checkmark.circle.fill" : "checkmark",
+                    label: isLastStep ? "맞음 · 완료" : "맞음",
+                    tint: Theme.onBrand, bg: Theme.brand) {
+                grade(true)
+            }
+        }
+    }
+
+    private var prevButton: some View {
+        ctrlBtn(icon: "chevron.left", label: "이전",
+                tint: stepIndex > 0 ? Theme.textSecondary : Theme.textQuaternary,
+                bg: Theme.surfaceSoft) {
+            goTo(stepIndex - 1)
+        }
+        .disabled(stepIndex == 0)
+    }
+
+    private var clearButton: some View {
+        ctrlBtn(icon: "trash", label: "지우기",
+                tint: Theme.textSecondary,
+                bg: Theme.surfaceSoft) {
+            clearCurrent()
+        }
+    }
+
+    private var eraserButton: some View {
+        ctrlBtn(icon: isErasing ? "pencil" : "eraser",
+                label: isErasing ? "펜" : "지우개",
+                tint: isErasing ? Theme.brand : Theme.textPrimary,
+                bg: isErasing ? Theme.brand.opacity(0.15) : Theme.surfaceSoft) {
+            isErasing.toggle()
+        }
     }
 
     private var strokeCredit: some View {
@@ -313,6 +416,23 @@ struct KanjiWritingView: View {
 
     private var isLastStep: Bool { stepIndex + 1 >= steps.count }
 
+    /// 남는 폭을 차지하는 주요 동작 버튼
+    private func wideBtn(icon: String, label: String,
+                         tint: Color, bg: Color,
+                         action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon).font(.system(size: 14, weight: .bold))
+                Text(label).font(.system(size: 14, weight: .bold))
+            }
+            .foregroundStyle(tint)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 15)
+            .background(bg)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
     private func ctrlBtn(icon: String, label: String,
                           tint: Color, bg: Color,
                           action: @escaping () -> Void) -> some View {
@@ -322,7 +442,7 @@ struct KanjiWritingView: View {
                 Text(label).font(.system(size: 10, weight: .medium))
             }
             .foregroundStyle(tint)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: mode == .trace ? .infinity : 62)
             .padding(.vertical, 11)
             .background(bg)
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -332,20 +452,84 @@ struct KanjiWritingView: View {
     // MARK: - Complete
 
     private var completeView: some View {
-        VStack(spacing: 24) {
-            Text("🎉").font(.system(size: 64))
-            Text("연습 완료!")
-                .font(.system(size: 28, weight: .black)).foregroundStyle(Theme.textPrimary)
-            Text("\(wordCount)개 단어 · 한자 \(steps.count)자를 연습했습니다")
-                .font(.system(size: 16)).foregroundStyle(Theme.textSecondary)
-            Button { setupSteps() } label: {
-                Text("다시 연습하기")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.onBrand)
-                    .padding(.horizontal, 32).padding(.vertical, 14)
-                    .background(Theme.brand)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+        let graded = steps.filter { results[$0.id] != nil }
+        let correct = steps.filter { results[$0.id] == true }
+        let wrong = steps.filter { results[$0.id] == false }
+
+        return ScrollView {
+            VStack(spacing: 20) {
+                Text("🎉").font(.system(size: 60))
+                Text("연습 완료!")
+                    .font(.system(size: 26, weight: .black))
+                    .foregroundStyle(Theme.textPrimary)
+
+                if graded.isEmpty {
+                    // 따라 쓰기만 한 경우 — 채점할 것이 없다
+                    Text("\(wordCount)개 단어 · 한자 \(steps.count)자를 연습했습니다")
+                        .font(.system(size: 15))
+                        .foregroundStyle(Theme.textSecondary)
+                } else {
+                    VStack(spacing: 6) {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text("\(correct.count)")
+                                .font(.system(size: 46, weight: .black, design: .rounded))
+                                .foregroundStyle(Theme.brand)
+                            Text("/ \(graded.count)자 정답")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        Text("\(wordCount)개 단어 · 한자 \(steps.count)자 중 \(graded.count)자 채점")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(.vertical, 18)
+                    .frame(maxWidth: .infinity)
+                    .background(Theme.brand.opacity(0.10))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                    if !wrong.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("다시 볼 한자 \(wrong.count)자")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(Theme.textTertiary)
+
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 64), spacing: 8)],
+                                      spacing: 8) {
+                                ForEach(wrong) { step in
+                                    VStack(spacing: 2) {
+                                        Text(String(step.kanji))
+                                            .font(.system(size: 26, weight: .bold))
+                                            .foregroundStyle(Theme.textPrimary)
+                                        Text(step.card.reading)
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(Theme.textTertiary)
+                                            .lineLimit(1)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(Color(accentHex: "DC2626").opacity(0.10))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }
+                            }
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Theme.surfaceSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                }
+
+                Button { setupSteps() } label: {
+                    Text("다시 연습하기")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Theme.onBrand)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                        .background(Theme.brand)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
             }
+            .padding(20)
         }
     }
 
@@ -366,6 +550,7 @@ struct KanjiWritingView: View {
         }
         stepIndex = 0
         drawings = [:]
+        results = [:]
         canvas.drawing = PKDrawing()
         sessionDone = false
         resetTools()
@@ -378,6 +563,8 @@ struct KanjiWritingView: View {
         stepIndex = index
         canvas.drawing = drawings[steps[index].id] ?? PKDrawing()
         resetTools()
+        // 이미 채점한 글자로 되돌아오면 정답이 보이던 상태를 유지한다
+        if results[steps[index].id] != nil { revealed = true }
     }
 
     private func clearCurrent() {
@@ -390,6 +577,14 @@ struct KanjiWritingView: View {
         isErasing = false
         isPlayingStrokes = false
         strokePhase = 0
+        revealed = false
+    }
+
+    /// 자기 채점 후 다음 글자로. 마지막이면 결과 화면으로 넘어간다.
+    private func grade(_ correct: Bool) {
+        guard let step = currentStep else { return }
+        results[step.id] = correct
+        advance()
     }
 
     /// 획을 하나씩 순서대로 그린다. phase 0 → 획수 를 선형으로 움직이면

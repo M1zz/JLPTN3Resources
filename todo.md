@@ -107,6 +107,16 @@
   - 따라 쓰기 모드는 그대로 유지 (밑글자 3단계 + 이전/다음)
   - 이미 채점한 글자로 되돌아가면 공개 상태 복원
 
+## 버그 수정
+- [x] 획순 버튼이 필기 입력을 막던 문제 (2026-08-10)
+  - 원인: ZStack 안에서 `strokeOrderButton().frame(maxWidth:.infinity, maxHeight:.infinity, alignment:.topTrailing)`
+    → .frame이 Button 자신에게 적용돼 버튼의 터치 영역이 칸 전체로 확장됨.
+    캔버스 위에 있으므로 모든 필기 터치를 버튼이 가로챔
+  - 증상 조건과 일치: 버튼은 answerVisible일 때만 렌더 →
+    따라 쓰기 모드 / 정답 확인 후에만 필기가 막힘 (문제 출제 중에는 정상)
+  - 수정: overlay(alignment:)로 얹어 버튼이 고유 크기만 갖게 하고,
+    contentShape(Capsule) + buttonStyle(.plain)으로 히트 영역을 캡슐로 한정
+
 ## 학습과학 설계 원칙
 - 간격반복 (Spaced Repetition): SM-2 알고리즘
 - 교차 학습 (Interleaved Practice): 어휘/문법 섞어서 복습

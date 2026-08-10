@@ -274,15 +274,18 @@ struct KanjiWritingView: View {
 
                 CanvasWrapper(canvas: canvas, isErasing: isErasing)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
-
+            }
+            .frame(width: box, height: box)
+            // 획순 버튼은 반드시 overlay로 얹는다.
+            // ZStack 안에서 .frame(maxWidth:.infinity, maxHeight:.infinity)로 감싸면
+            // 그 프레임이 Button 자신의 크기가 되어 칸 전체가 터치 영역이 되고,
+            // 필기 입력이 전부 버튼에 먹힌다.
+            .overlay(alignment: .topTrailing) {
                 if KanjiStrokes.hasData(for: step.kanji), answerVisible {
                     strokeOrderButton(step.kanji)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity,
-                               alignment: .topTrailing)
                         .padding(10)
                 }
             }
-            .frame(width: box, height: box)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(.vertical, 12)
@@ -303,7 +306,9 @@ struct KanjiWritingView: View {
             .padding(.vertical, 6)
             .background(Theme.brand.opacity(0.16))
             .clipShape(Capsule())
+            .contentShape(Capsule())
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Controls

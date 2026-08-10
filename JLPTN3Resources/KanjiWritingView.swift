@@ -24,14 +24,55 @@ private struct WritingStep: Identifiable {
     let kanjiCount: Int
 }
 
+// MARK: - 따라쓰기 밑글자
+
+/// 캔버스 아래에 깔리는 흐릿한 글자. 한자 연습장의 밑글자와 같은 역할이다.
+enum TraceGuideLevel: String, CaseIterable {
+    case faint, strong, off
+
+    /// 기본은 흐리게 — 획을 덮지 않으면서 형태만 따라갈 수 있는 정도
+    var opacity: Double {
+        switch self {
+        case .faint:  return 0.13
+        case .strong: return 0.30
+        case .off:    return 0
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .faint:  return "흐리게"
+        case .strong: return "진하게"
+        case .off:    return "없음"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .faint:  return "eye"
+        case .strong: return "eye.fill"
+        case .off:    return "eye.slash"
+        }
+    }
+
+    var next: TraceGuideLevel {
+        switch self {
+        case .faint:  return .strong
+        case .strong: return .off
+        case .off:    return .faint
+        }
+    }
+}
+
 // MARK: - Kanji Writing View
 
 struct KanjiWritingView: View {
     @State private var steps: [WritingStep] = []
     @State private var stepIndex = 0
     @State private var drawings: [UUID: PKDrawing] = [:]
-    @State private var showHint = false
     @State private var isErasing = false
+    // 글자마다 껐다 켜는 힌트가 아니라 «연습 방식» 설정이므로 앱을 다시 켜도 유지한다
+    @AppStorage("kanjiTraceGuide") private var guideRaw = TraceGuideLevel.faint.rawValue
     @State private var sessionDone = false
 
     // 한 글자씩 쓰므로 캔버스는 하나만 유지한다. makeUIView는 한 번만 호출되므로
@@ -52,6 +93,10 @@ struct KanjiWritingView: View {
 
     private var wordCount: Int {
         Set(steps.map { $0.card.id }).count
+    }
+
+    private var guide: TraceGuideLevel {
+        TraceGuideLevel(rawValue: guideRaw) ?? .faint
     }
 
     var body: some View {
@@ -151,10 +196,11 @@ struct KanjiWritingView: View {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Theme.canvasCell)
                 GridGuide(size: box)
-                if showHint {
+                if guide != .off {
                     Text(String(step.kanji))
-                        .font(.system(size: box * 0.72, weight: .black))
-                        .foregroundStyle(Theme.brand.opacity(0.22))
+                        .font(.system(size: box * 0.74, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary.opacity(guide.opacity))
+                        .animation(.easeInOut(duration: 0.2), value: guideRaw)
                         .allowsHitTesting(false)
                 }
                 CanvasWrapper(canvas: canvas, isErasing: isErasing)
@@ -193,12 +239,13 @@ struct KanjiWritingView: View {
                 isErasing.toggle()
             }
 
-            // 힌트
-            ctrlBtn(icon: showHint ? "eye.slash.fill" : "eye.fill",
-                    label: showHint ? "힌트끄기" : "힌트",
-                    tint: showHint ? Theme.brand : Theme.textPrimary,
-                    bg: showHint ? Theme.brand.opacity(0.15) : Theme.surfaceSoft) {
-                withAnimation(.easeInOut(duration: 0.2)) { showHint.toggle() }
+            // 밑글자 진하기 (흐리게 → 진하게 → 없음)
+            ctrlBtn(icon: guide.icon,
+                    label: guide.label,
+                    tint: guide == .off ? Theme.textQuaternary
+                                        : (guide == .strong ? Theme.brand : Theme.textPrimary),
+                    bg: guide == .strong ? Theme.brand.opacity(0.15) : Theme.surfaceSoft) {
+                guideRaw = guide.next.rawValue
             }
 
             // 다음 글자
@@ -290,7 +337,6 @@ struct KanjiWritingView: View {
     }
 
     private func resetTools() {
-        showHint = false
         isErasing = false
     }
 

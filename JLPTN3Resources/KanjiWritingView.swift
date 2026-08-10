@@ -71,6 +71,10 @@ struct KanjiWritingView: View {
     @State private var stepIndex = 0
     @State private var drawings: [UUID: PKDrawing] = [:]
     @State private var isErasing = false
+    @State private var strokePhase: Double = 0
+    @State private var isPlayingStrokes = false
+    /// 재생을 다시 누르면 이전 재생의 «자동 숨김» 예약을 무효화하기 위한 토큰
+    @State private var strokePlayToken = 0
     // 글자마다 껐다 켜는 힌트가 아니라 «연습 방식» 설정이므로 앱을 다시 켜도 유지한다
     @AppStorage("kanjiTraceGuide") private var guideRaw = TraceGuideLevel.faint.rawValue
     @State private var sessionDone = false
@@ -112,6 +116,7 @@ struct KanjiWritingView: View {
                         progressBar
                         canvasArea(step)
                         controls
+                        strokeCredit
                     }
                 } else {
                     ProgressView().tint(Theme.brand)
@@ -148,24 +153,32 @@ struct KanjiWritingView: View {
                     .font(.system(size: 12, design: .monospaced))
                     .foregroundStyle(Theme.textQuaternary)
             }
-            HStack {
+            HStack(spacing: 6) {
                 Text(step.card.meaning)
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
                 if step.kanjiCount > 1 {
-                    Text("한자 \(step.kanjiCount)자 중 \(step.kanjiIndex + 1)번째")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Theme.brand)
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(Theme.brand.opacity(0.14))
-                        .clipShape(Capsule())
+                    chip("한자 \(step.kanjiCount)자 중 \(step.kanjiIndex + 1)번째")
+                }
+                let strokes = KanjiStrokes.strokeCount(for: step.kanji)
+                if strokes > 0 {
+                    chip("\(strokes)획")
                 }
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
         .background(Theme.backgroundElevated)
+    }
+
+    private func chip(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 11, weight: .medium))
+            .foregroundStyle(Theme.brand)
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(Theme.brand.opacity(0.14))
+            .clipShape(Capsule())
     }
 
     private var progressBar: some View {
@@ -203,13 +216,43 @@ struct KanjiWritingView: View {
                         .animation(.easeInOut(duration: 0.2), value: guideRaw)
                         .allowsHitTesting(false)
                 }
+                // 획순 안내는 밑글자 위, 필기 아래에 그린다
+                if isPlayingStrokes {
+                    StrokeOrderView(kanji: step.kanji, phase: strokePhase, size: box)
+                }
+
                 CanvasWrapper(canvas: canvas, isErasing: isErasing)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
+
+                if KanjiStrokes.hasData(for: step.kanji) {
+                    strokeOrderButton(step.kanji)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity,
+                               alignment: .topTrailing)
+                        .padding(10)
+                }
             }
             .frame(width: box, height: box)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(.vertical, 12)
+    }
+
+    private func strokeOrderButton(_ kanji: Character) -> some View {
+        Button {
+            playStrokeOrder(kanji)
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: isPlayingStrokes ? "arrow.clockwise" : "play.fill")
+                    .font(.system(size: 10, weight: .bold))
+                Text("획순")
+                    .font(.system(size: 11, weight: .bold))
+            }
+            .foregroundStyle(Theme.brand)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Theme.brand.opacity(0.16))
+            .clipShape(Capsule())
+        }
     }
 
     // MARK: - Controls
@@ -257,8 +300,15 @@ struct KanjiWritingView: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 16)
         .padding(.top, 4)
+    }
+
+    private var strokeCredit: some View {
+        Text("획순 데이터 © KanjiVG · CC BY-SA 3.0")
+            .font(.system(size: 9))
+            .foregroundStyle(Theme.textQuaternary)
+            .padding(.top, 6)
+            .padding(.bottom, 12)
     }
 
     private var isLastStep: Bool { stepIndex + 1 >= steps.count }
@@ -338,6 +388,34 @@ struct KanjiWritingView: View {
 
     private func resetTools() {
         isErasing = false
+        isPlayingStrokes = false
+        strokePhase = 0
+    }
+
+    /// 획을 하나씩 순서대로 그린다. phase 0 → 획수 를 선형으로 움직이면
+    /// StrokeShape가 자기 구간만 잘라 그리므로 순차 애니메이션이 된다.
+    private func playStrokeOrder(_ kanji: Character) {
+        let count = KanjiStrokes.strokeCount(for: kanji)
+        guard count > 0 else { return }
+        let duration = 0.42 * Double(count)
+
+        strokePhase = 0
+        isPlayingStrokes = true
+        strokePlayToken += 1
+        let token = strokePlayToken
+
+        // 0으로 되돌린 값이 반영된 다음 프레임부터 애니메이션을 시작해야
+        // 다시 재생할 때 처음부터 그려진다
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+            withAnimation(.linear(duration: duration)) {
+                strokePhase = Double(count)
+            }
+        }
+        // 다 그린 뒤 잠깐 보여 주고 사라진다. 재생 중 다시 눌렀다면 이 예약은 무시한다.
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration + 1.2) {
+            guard token == strokePlayToken else { return }
+            withAnimation(.easeOut(duration: 0.4)) { isPlayingStrokes = false }
+        }
     }
 
     private func advance() {

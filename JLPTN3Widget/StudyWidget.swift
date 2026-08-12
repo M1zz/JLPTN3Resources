@@ -89,81 +89,71 @@ struct StudyWidgetView: View {
 
     // MARK: 홈 화면 — 중간 (여기서 바로 채점까지)
 
+    /// 남은 장수·연속 일수 같은 계기판은 넣지 않는다.
+    /// 위젯을 보는 짧은 순간에 쓸모 있는 것은 «지금 외울 낱말»뿐이고,
+    /// 그 낱말이 클수록 훑어보다 눈에 걸린다. 숫자는 앱을 열면 볼 수 있다.
     private var medium: some View {
-        HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(remaining)")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
-                Text("장 남음")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                if snapshot.streak > 0 {
-                    Text("연속 \(snapshot.streak)일")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-                Link(destination: URL(string: "jlptn3://study")!) {
-                    Text("앱에서 학습")
-                        .font(.system(size: 10, weight: .bold))
-                }
-            }
-            .frame(width: 74, alignment: .leading)
-
-            Divider()
-
+        Group {
             if let front = snapshot.front {
                 VStack(alignment: .leading, spacing: 6) {
+                    // 낱말 — 칸이 허락하는 만큼 크게
                     Text(front)
-                        .font(.system(size: 26, weight: .black))
+                        .font(.system(size: snapshot.revealed ? 46 : 68, weight: .black))
+                        .minimumScaleFactor(0.35)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                     if snapshot.revealed {
                         Text(snapshot.reading ?? "")
-                            .font(.system(size: 11))
+                            .font(.system(size: 13))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
                         Text(snapshot.meaning ?? "")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 17, weight: .semibold))
                             .lineLimit(2)
-                            .minimumScaleFactor(0.7)
-                        Spacer(minLength: 0)
-                        HStack(spacing: 6) {
+                            .minimumScaleFactor(0.6)
+                    }
+
+                    Spacer(minLength: 4)
+
+                    HStack(spacing: 8) {
+                        if snapshot.revealed {
                             // 위젯 안에서 그대로 채점한다 (앱이 열리지 않는다)
                             Button(intent: RateCardIntent(ratingValue: SRSRating.again.rawValue)) {
-                                Text("몰랐다").font(.system(size: 12, weight: .bold))
+                                Text("몰랐다")
+                                    .font(.system(size: 14, weight: .bold))
                                     .frame(maxWidth: .infinity)
                             }
                             .tint(.red)
                             Button(intent: RateCardIntent(ratingValue: SRSRating.good.rawValue)) {
-                                Text("알았다").font(.system(size: 12, weight: .bold))
+                                Text("알았다")
+                                    .font(.system(size: 14, weight: .bold))
                                     .frame(maxWidth: .infinity)
                             }
                             .tint(.green)
+                        } else {
+                            Button(intent: RevealMeaningIntent()) {
+                                Text("뜻 보기")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .frame(maxWidth: .infinity)
+                            }
                         }
-                        .buttonStyle(.borderedProminent)
-                    } else {
-                        Spacer(minLength: 0)
-                        Button(intent: RevealMeaningIntent()) {
-                            Text("뜻 보기")
-                                .font(.system(size: 13, weight: .bold))
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
                     }
+                    .buttonStyle(.borderedProminent)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 VStack(spacing: 4) {
                     Text("오늘 몫을 다 했습니다")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 18, weight: .black))
                     Text("내일 복습할 카드가 준비됩니다")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        // 버튼이 아닌 곳을 누르면 앱의 학습 세션으로 (예전의 «앱에서 학습» 링크를 대신한다)
+        .widgetURL(URL(string: "jlptn3://study"))
     }
 
     // MARK: 잠금화면 — 동그라미 (남은 장수)

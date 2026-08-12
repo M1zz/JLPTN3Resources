@@ -24,9 +24,25 @@
 		B015 /* MilestoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A015 /* MilestoneView.swift */; };
 		B016 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A016 /* Theme.swift */; };
 		B017 /* MockExamData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A017 /* MockExamData.swift */; };
+		B030 /* N3ExampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A030 /* N3ExampleData.swift */; };
 		B018 /* MockExamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A018 /* MockExamView.swift */; };
 		B019 /* KanjiStrokes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A019 /* KanjiStrokes.swift */; };
 		B020 /* KanjiStrokes.json in Resources */ = {isa = PBXBuildFile; fileRef = A020 /* KanjiStrokes.json */; };
+		B031 /* ReadingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A031 /* ReadingData.swift */; };
+		B032 /* ListeningData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A032 /* ListeningData.swift */; };
+		B033 /* PracticeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A033 /* PracticeStore.swift */; };
+		B034 /* ReadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A034 /* ReadingView.swift */; };
+		B035 /* ListeningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A035 /* ListeningView.swift */; };
+		B036 /* PracticeHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A036 /* PracticeHubView.swift */; };
+		B037 /* VocabNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A037 /* VocabNote.swift */; };
+		B038 /* HighlightableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A038 /* HighlightableText.swift */; };
+		B039 /* VocabNotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A039 /* VocabNotebookView.swift */; };
+		B040 /* ReadingWordBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = A040 /* ReadingWordBank.swift */; };
+		B045 /* ListeningData2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A045 /* ListeningData2.swift */; };
+		B044 /* ReadingData2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A044 /* ReadingData2.swift */; };
+		B043 /* JLPTVocabularyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A043 /* JLPTVocabularyData.swift */; };
+		B042 /* PassPredictionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A042 /* PassPredictionView.swift */; };
+		B041 /* PassPrediction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A041 /* PassPrediction.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,12 +61,28 @@
 		A013 /* StudySessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudySessionView.swift; sourceTree = "<group>"; };
 		A016 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A017 /* MockExamData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExamData.swift; sourceTree = "<group>"; };
+		A030 /* N3ExampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = N3ExampleData.swift; sourceTree = "<group>"; };
 		A018 /* MockExamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExamView.swift; sourceTree = "<group>"; };
 		A019 /* KanjiStrokes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanjiStrokes.swift; sourceTree = "<group>"; };
 		A020 /* KanjiStrokes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = KanjiStrokes.json; sourceTree = "<group>"; };
 		A014 /* KanjiWritingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanjiWritingView.swift; sourceTree = "<group>"; };
 		A015 /* MilestoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneView.swift; sourceTree = "<group>"; };
 		PROD /* JLPTN3Resources.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JLPTN3Resources.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A031 /* ReadingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingData.swift; sourceTree = "<group>"; };
+		A032 /* ListeningData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningData.swift; sourceTree = "<group>"; };
+		A033 /* PracticeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeStore.swift; sourceTree = "<group>"; };
+		A034 /* ReadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingView.swift; sourceTree = "<group>"; };
+		A035 /* ListeningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningView.swift; sourceTree = "<group>"; };
+		A036 /* PracticeHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeHubView.swift; sourceTree = "<group>"; };
+		A037 /* VocabNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabNote.swift; sourceTree = "<group>"; };
+		A038 /* HighlightableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightableText.swift; sourceTree = "<group>"; };
+		A039 /* VocabNotebookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabNotebookView.swift; sourceTree = "<group>"; };
+		A040 /* ReadingWordBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingWordBank.swift; sourceTree = "<group>"; };
+		A045 /* ListeningData2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningData2.swift; sourceTree = "<group>"; };
+		A044 /* ReadingData2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingData2.swift; sourceTree = "<group>"; };
+		A043 /* JLPTVocabularyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JLPTVocabularyData.swift; sourceTree = "<group>"; };
+		A042 /* PassPredictionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassPredictionView.swift; sourceTree = "<group>"; };
+		A041 /* PassPrediction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassPrediction.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -77,6 +109,22 @@
 				A002 /* ContentView.swift */,
 				A016 /* Theme.swift */,
 				A017 /* MockExamData.swift */,
+				A030 /* N3ExampleData.swift */,
+				A031 /* ReadingData.swift */,
+				A032 /* ListeningData.swift */,
+				A033 /* PracticeStore.swift */,
+				A034 /* ReadingView.swift */,
+				A035 /* ListeningView.swift */,
+				A036 /* PracticeHubView.swift */,
+				A037 /* VocabNote.swift */,
+				A038 /* HighlightableText.swift */,
+				A039 /* VocabNotebookView.swift */,
+				A040 /* ReadingWordBank.swift */,
+				A045 /* ListeningData2.swift */,
+				A044 /* ReadingData2.swift */,
+				A043 /* JLPTVocabularyData.swift */,
+				A042 /* PassPredictionView.swift */,
+				A041 /* PassPrediction.swift */,
 				A018 /* MockExamView.swift */,
 				A019 /* KanjiStrokes.swift */,
 				A020 /* KanjiStrokes.json */,
@@ -170,6 +218,22 @@
 				B002 /* ContentView.swift in Sources */,
 				B016 /* Theme.swift in Sources */,
 				B017 /* MockExamData.swift in Sources */,
+				B030 /* N3ExampleData.swift in Sources */,
+				B031 /* ReadingData.swift in Sources */,
+				B032 /* ListeningData.swift in Sources */,
+				B033 /* PracticeStore.swift in Sources */,
+				B034 /* ReadingView.swift in Sources */,
+				B035 /* ListeningView.swift in Sources */,
+				B036 /* PracticeHubView.swift in Sources */,
+				B037 /* VocabNote.swift in Sources */,
+				B038 /* HighlightableText.swift in Sources */,
+				B039 /* VocabNotebookView.swift in Sources */,
+				B040 /* ReadingWordBank.swift in Sources */,
+				B045 /* ListeningData2.swift in Sources */,
+				B044 /* ReadingData2.swift in Sources */,
+				B043 /* JLPTVocabularyData.swift in Sources */,
+				B042 /* PassPredictionView.swift in Sources */,
+				B041 /* PassPrediction.swift in Sources */,
 				B018 /* MockExamView.swift in Sources */,
 				B019 /* KanjiStrokes.swift in Sources */,
 				B003 /* Resource.swift in Sources */,

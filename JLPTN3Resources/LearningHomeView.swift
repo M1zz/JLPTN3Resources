@@ -8,7 +8,7 @@ private struct SessionItem: Identifiable {
 }
 
 struct LearningHomeView: View {
-    @StateObject private var store = LearningStore()
+    @EnvironmentObject private var store: LearningStore
     @State private var sessionItem: SessionItem? = nil
 
     private var totalToday: Int { store.dueCards.count + min(store.newCards.count, 10) }
@@ -292,4 +292,5 @@ struct LearningHomeView: View {
 
 #Preview {
     LearningHomeView()
+        .environmentObject(LearningStore())
 }

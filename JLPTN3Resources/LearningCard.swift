@@ -32,12 +32,32 @@ enum CardType: String, Codable, CaseIterable, Identifiable {
 enum SRSRating: Int, CaseIterable {
     case again = 1, hard = 2, good = 3, easy = 4
 
-    var label: String {
-        switch self {
-        case .again: return "다시"
-        case .hard:  return "어려움"
-        case .good:  return "양호"
-        case .easy:  return "쉬움"
+    /// 「어려움 / 양호」처럼 느낌을 묻지 않고, «무엇까지 할 수 있었는지»를 묻는다.
+    ///
+    /// 느낌으로 고르면 사람마다·날마다 기준이 흔들려 복습 간격이 엉킨다.
+    /// 인출의 깊이는 «뜻 → 소리 → 표기» 순으로 단계가 분명하므로, 그 단계를 그대로 쓴다.
+    /// 문법 카드에는 «읽기»가 어울리지 않아 «이해 → 활용»으로 바꾼다.
+    func label(for type: CardType) -> String {
+        switch (self, type) {
+        case (.again, _):          return "찍음"
+        case (.hard,  _):          return "뜻만"
+        case (.good,  .grammar):   return "이해"
+        case (.good,  _):          return "읽기"
+        case (.easy,  .grammar):   return "활용"
+        case (.easy,  _):          return "쓰기"
+        }
+    }
+
+    /// 버튼 아래 작은 글씨 — 그 단계의 판단 기준
+    func criterion(for type: CardType) -> String {
+        switch (self, type) {
+        case (.again, _):        return "몰랐다"
+        case (.hard,  .grammar): return "의미는 안다"
+        case (.hard,  _):        return "뜻은 안다"
+        case (.good,  .grammar): return "예문이 읽힌다"
+        case (.good,  _):        return "소리 내어 읽는다"
+        case (.easy,  .grammar): return "문장을 만든다"
+        case (.easy,  _):        return "한자까지 쓴다"
         }
     }
 
@@ -50,14 +70,9 @@ enum SRSRating: Int, CaseIterable {
         }
     }
 
-    var hint: String {
-        switch self {
-        case .again: return "<10분"
-        case .hard:  return "1일"
-        case .good:  return "4일"
-        case .easy:  return "7일+"
-        }
-    }
+    // 예전에는 여기서 «1일 / 4일»처럼 다음 복습까지의 날짜를 보여 줬다.
+    // 그 숫자는 SM-2가 알아서 정하는 것이고, 고르는 사람이 알아야 할 정보가 아니다.
+    // 오히려 「4일 뒤에 또 보기 싫으니 쉬움을 누르자」처럼 기준을 왜곡시킨다.
 }
 
 // MARK: - Learning Card

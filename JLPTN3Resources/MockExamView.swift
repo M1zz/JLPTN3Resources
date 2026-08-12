@@ -27,6 +27,8 @@ private final class ExamSpeech: ObservableObject {
 struct MockExamView: View {
     private enum Phase { case intro, exam, result }
 
+    @EnvironmentObject private var practice: PracticeStore
+
     @State private var phase: Phase = .intro
     @State private var index = 0
     @State private var answers: [String: Int] = [:]
@@ -324,6 +326,8 @@ struct MockExamView: View {
                 if index + 1 < questions.count {
                     index += 1
                 } else {
+                    // 채점 결과를 남긴다 — 언어지식 실력을 재는 유일한 기록이다
+                    practice.record(mockAnswers: answers, questions: questions)
                     phase = .result
                 }
             } label: {
@@ -596,4 +600,5 @@ private struct MockExamResultView: View {
 
 #Preview {
     MockExamView()
+        .environmentObject(PracticeStore())
 }

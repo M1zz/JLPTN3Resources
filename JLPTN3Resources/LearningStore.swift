@@ -254,7 +254,21 @@ final class LearningStore: ObservableObject {
     private func load() {
         if let data = UserDefaults.standard.data(forKey: cardsKey),
            let decoded = try? JSONDecoder().decode([LearningCard].self, from: data) {
-            cards = decoded
+            // 저장된 배열을 그대로 쓰면 안 된다.
+            // 그러면 어휘장에 카드를 더해도 이미 앱을 켠 적 있는 사람에게는 영영 보이지 않고,
+            // 뜻·예문을 고쳐도 옛 내용이 남는다.
+            // 카드 목록은 언제나 최신 어휘장을 따르고, 저장된 것에서는 SRS 진도만 이어받는다.
+            let saved = Dictionary(decoded.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            cards = LearningCard.allCards.map { card in
+                guard let old = saved[card.id] else { return card }   // 새로 추가된 카드
+                var merged = card
+                merged.interval = old.interval
+                merged.easeFactor = old.easeFactor
+                merged.repetitions = old.repetitions
+                merged.nextReviewDate = old.nextReviewDate
+                merged.learningStep = old.learningStep
+                return merged
+            }
         }
         if let data = UserDefaults.standard.data(forKey: statsKey),
            let decoded = try? JSONDecoder().decode(LearningStats.self, from: data) {

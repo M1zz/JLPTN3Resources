@@ -98,13 +98,16 @@ let scoringSections: [ScoringSection] = [
 // MARK: - Milestone View
 
 struct MilestoneView: View {
-    @StateObject private var store = LearningStore()
+    @EnvironmentObject private var store: LearningStore
+    /// 독해·청해 연습 진도 — «앱이 추적하지 않는다»던 빈칸을 채운다
+    @EnvironmentObject private var practice: PracticeStore
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
                     readinessHero
+                    passProbabilitySection
                     passCriteriaSection
                     selfCheckSection
                     milestoneRoadmap
@@ -119,6 +122,65 @@ struct MilestoneView: View {
             .toolbarBackground(Theme.backgroundElevated, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
         }
+    }
+
+    // MARK: - 합격 확률 (요약 → 자세히)
+
+    /// 확률은 근거와 함께 봐야 하므로 요약만 놓고 자세한 계산은 다음 화면으로 넘긴다
+    private var passProbabilitySection: some View {
+        let prediction = PassPrediction(practice: practice,
+                                        languageReadiness: store.readinessScore)
+        let percent = Int((prediction.passProbability * 100).rounded())
+        let enough = prediction.hasEnoughEvidence
+        let accent = Color(accentHex: percent >= 70 ? "10B981" : (percent >= 40 ? "D97706" : "DC2626"))
+
+        return NavigationLink {
+            PassPredictionView()
+        } label: {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("지금 시험을 본다면")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                    if enough {
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text("\(percent)")
+                                .font(.system(size: 32, weight: .black, design: .rounded))
+                                .foregroundStyle(accent)
+                            Text("%")
+                                .font(.system(size: 15, weight: .black, design: .rounded))
+                                .foregroundStyle(accent)
+                            Text("합격 확률")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(Theme.textSecondary)
+                                .padding(.leading, 4)
+                        }
+                        Text("예상 총점 \(Int(prediction.expectedTotal.rounded()))점 "
+                             + "· 흔히 \(Int(prediction.totalInterval80.low))–\(Int(prediction.totalInterval80.high))점")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textQuaternary)
+                    } else {
+                        Text("아직 계산할 수 없음")
+                            .font(.system(size: 18, weight: .black))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("푼 문항 \(prediction.evidenceCount)개 — 10개는 넘어야 합니다")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textQuaternary)
+                    }
+                }
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Theme.textQuaternary)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.backgroundElevated)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Hero Section
@@ -401,13 +463,36 @@ struct MilestoneView: View {
                 .background(Theme.surfaceSoft)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             } else {
-                HStack(spacing: 6) {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 11))
-                    Text("이 과목은 앱이 진도를 추적하지 않습니다. 기출·교재로 직접 훈련하세요.")
-                        .font(.system(size: 11))
+                // 독해·청해는 «연습» 탭의 문항 풀이 기록으로 진도를 보여준다
+                let isReading = section.name == "독해"
+                let solved = isReading ? practice.readingSolved : practice.listeningSolved
+                let total  = isReading ? practice.readingTotal  : practice.listeningTotal
+                let acc    = isReading ? practice.readingAccuracy : practice.listeningAccuracy
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("연습 탭 진도")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Theme.textTertiary)
+                    HStack(spacing: 10) {
+                        Text("\(solved) / \(total)문항")
+                            .font(.system(size: 13, weight: .black, design: .rounded))
+                            .foregroundStyle(c)
+                        if let acc {
+                            Text("정답률 \(Int(acc * 100))%")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    ProgressView(value: Double(solved), total: Double(max(total, 1))).tint(c)
+                    Text("문항은 자체 제작입니다. 실전 감각은 기출·교재로 함께 다지세요.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Theme.textQuaternary)
                 }
-                .foregroundStyle(Theme.textTertiary)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.surfaceSoft)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
 
             Divider().background(Theme.stroke)

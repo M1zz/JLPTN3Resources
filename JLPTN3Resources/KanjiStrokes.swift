@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - 획순 데이터
 //
 // 출처: KanjiVG (https://kanjivg.tagaini.net) — CC BY-SA 3.0.
-// KanjiStrokes.json은 앱 어휘에 쓰인 한자 434자의 획 path만 추려낸 파생물이며
+// KanjiStrokes.json은 앱 어휘에 쓰인 한자 1,330자의 획 path만 추려낸 파생물이며
 // 원본과 동일하게 CC BY-SA 3.0으로 배포된다. 자세한 내용은 LICENSE-KanjiVG.md 참고.
 
 enum KanjiStrokes {
@@ -37,6 +37,9 @@ enum KanjiStrokes {
     static func hasData(for kanji: Character) -> Bool {
         raw[String(kanji)] != nil
     }
+
+    /// 획순을 보여 줄 수 있는 한자 수
+    static var count: Int { raw.count }
 }
 
 // MARK: - SVG path 파서

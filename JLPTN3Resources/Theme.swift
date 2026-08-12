@@ -68,6 +68,11 @@ enum Theme {
         light: UIColor(white: 0, alpha: 0.10),
         dark: UIColor(white: 1, alpha: 0.10)
     )
+    /// 형광펜 — 라이트에서는 노란 형광, 다크에서는 눈이 부시지 않게 낮춘 호박색
+    static let highlight = Color.adaptive(
+        light: UIColor(red: 1.00, green: 0.90, blue: 0.35, alpha: 1),
+        dark:  UIColor(red: 0.85, green: 0.68, blue: 0.15, alpha: 1)
+    )
     /// 배경 장식용 초대형 한자
     static let decoration = Color.adaptive(
         light: UIColor(white: 0, alpha: 0.035),

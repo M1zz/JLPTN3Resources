@@ -3,7 +3,8 @@ import AVFoundation
 
 // MARK: - Speech Manager
 
-private class SpeechManager: ObservableObject {
+/// 일본어 낭독 — 학습 세션과 쓰기 연습(듣기 모드)이 함께 쓴다
+class SpeechManager: ObservableObject {
     private let synthesizer = AVSpeechSynthesizer()
 
     func speak(_ text: String) {
@@ -195,13 +196,13 @@ struct StudySessionView: View {
 
     private var ratingButtons: some View {
         VStack(spacing: 10) {
-            Text("얼마나 잘 기억했나요?")
+            Text("어디까지 할 수 있었나요?")
                 .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(Theme.textSecondary)
 
             HStack(spacing: 8) {
                 ForEach(SRSRating.allCases, id: \.rawValue) { rating in
-                    ratingButton(rating)
+                    ratingButton(rating, type: currentCard?.type ?? .vocabulary)
                 }
             }
             .padding(.horizontal, 20)
@@ -209,7 +210,7 @@ struct StudySessionView: View {
         .padding(.bottom, 4)
     }
 
-    private func ratingButton(_ rating: SRSRating) -> some View {
+    private func ratingButton(_ rating: SRSRating, type: CardType) -> some View {
         Button {
             guard !isAnimating, let card = currentCard else { return }
             isAnimating = true
@@ -229,15 +230,19 @@ struct StudySessionView: View {
                 isAnimating = false
             }
         } label: {
-            VStack(spacing: 4) {
-                Text(rating.label)
+            VStack(spacing: 3) {
+                Text(rating.label(for: type))
                     .font(.system(size: 14, weight: .bold))
-                Text(rating.hint)
-                    .font(.system(size: 10))
-                    .opacity(0.7)
+                // 판단 기준. 좁은 화면에서도 줄이 접히지 않게 한 줄로 눌러 담는다
+                Text(rating.criterion(for: type))
+                    .font(.system(size: 9))
+                    .opacity(0.75)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 11)
+            .padding(.horizontal, 2)
             .background(Color(accentHex: rating.colorHex).opacity(0.18))
             .foregroundStyle(Color(accentHex: rating.colorHex))
             .clipShape(RoundedRectangle(cornerRadius: 12))

@@ -691,6 +691,20 @@ extension LearningCard {
         let vocab: [LearningCard] = vocabK1 + vocabK2 + vocabS1 + vocabS2
             + vocabK3 + vocabK4 + vocabS3 + vocabS4 + vocabK5
         let grammar: [LearningCard] = gramB1 + gramB2 + gramB3 + gramB4 + gramB5
-        return vocab + grammar
+        // 급수별 어휘장 (N5 → N4 → N3) — 같은 낱말이 겹치면 먼저 실린 쪽만 남긴다
+        var seen = Set(vocab.map(\.front))
+        var extra: [LearningCard] = []
+        for card in jlptVocabulary where !seen.contains(card.front) {
+            seen.insert(card.front)
+            extra.append(card)
+        }
+        return vocab + extra + grammar
+    }()
+}
+
+extension LearningCard {
+    /// 어휘 카드가 덮는 고유 낱말 수 — 합격 확률의 「어휘 커버리지」 계산에 쓴다
+    static let vocabularyWordCount: Int = {
+        Set(allCards.filter { $0.type == .vocabulary }.map(\.front)).count
     }()
 }

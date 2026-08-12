@@ -103,14 +103,14 @@ final class PracticeStore: ObservableObject {
     // MARK: 저장
 
     private func save() {
-        let d = UserDefaults.standard
+        let d = SharedStore.defaults
         d.set(try? JSONEncoder().encode(reading), forKey: readingKey)
         d.set(try? JSONEncoder().encode(listening), forKey: listeningKey)
         d.set(try? JSONEncoder().encode(mock), forKey: mockKey)
     }
 
     private func load() {
-        let d = UserDefaults.standard
+        let d = SharedStore.defaults
         if let data = d.data(forKey: readingKey),
            let decoded = try? JSONDecoder().decode([String: Bool].self, from: data) {
             reading = decoded

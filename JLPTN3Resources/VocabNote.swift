@@ -92,11 +92,11 @@ final class VocabNoteStore: ObservableObject {
     // MARK: 저장
 
     private func save() {
-        UserDefaults.standard.set(try? JSONEncoder().encode(notes), forKey: key)
+        SharedStore.defaults.set(try? JSONEncoder().encode(notes), forKey: key)
     }
 
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: key),
+        guard let data = SharedStore.defaults.data(forKey: key),
               let decoded = try? JSONDecoder().decode([VocabNote].self, from: data)
         else { return }
         notes = decoded

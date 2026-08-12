@@ -43,6 +43,16 @@
 		B043 /* JLPTVocabularyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A043 /* JLPTVocabularyData.swift */; };
 		B042 /* PassPredictionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A042 /* PassPredictionView.swift */; };
 		B041 /* PassPrediction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A041 /* PassPrediction.swift */; };
+		B046 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A046 /* SharedStore.swift */; };
+		W050 /* StudyWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A050 /* StudyWidget.swift */; };
+		W051 /* StudyIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A051 /* StudyIntents.swift */; };
+		W046 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A046 /* SharedStore.swift */; };
+		W009 /* LearningCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A009 /* LearningCard.swift */; };
+		W010 /* N3ContentData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A010 /* N3ContentData.swift */; };
+		W011 /* LearningStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A011 /* LearningStore.swift */; };
+		W016 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A016 /* Theme.swift */; };
+		W043 /* JLPTVocabularyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A043 /* JLPTVocabularyData.swift */; };
+		WEMBED /* JLPTN3Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = WIDGETPROD /* JLPTN3Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,6 +93,13 @@
 		A043 /* JLPTVocabularyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JLPTVocabularyData.swift; sourceTree = "<group>"; };
 		A042 /* PassPredictionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassPredictionView.swift; sourceTree = "<group>"; };
 		A041 /* PassPrediction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassPrediction.swift; sourceTree = "<group>"; };
+		A046 /* SharedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStore.swift; sourceTree = "<group>"; };
+		A047 /* JLPTN3Resources.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JLPTN3Resources.entitlements; sourceTree = "<group>"; };
+		A050 /* StudyWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyWidget.swift; sourceTree = "<group>"; };
+		A051 /* StudyIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyIntents.swift; sourceTree = "<group>"; };
+		A052 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A053 /* JLPTN3Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JLPTN3Widget.entitlements; sourceTree = "<group>"; };
+		WIDGETPROD /* JLPTN3Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = JLPTN3Widget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -90,14 +107,27 @@
 			isa = PBXGroup;
 			children = (
 				SRCGROUP /* JLPTN3Resources */,
+				WIDGETGROUP /* JLPTN3Widget */,
 				PRODGROUP /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		WIDGETGROUP /* JLPTN3Widget */ = {
+			isa = PBXGroup;
+			children = (
+				A050 /* StudyWidget.swift */,
+				A051 /* StudyIntents.swift */,
+				A052 /* Info.plist */,
+				A053 /* JLPTN3Widget.entitlements */,
+			);
+			path = JLPTN3Widget;
 			sourceTree = "<group>";
 		};
 		PRODGROUP /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				PROD /* JLPTN3Resources.app */,
+				WIDGETPROD /* JLPTN3Widget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,6 +138,8 @@
 				A001 /* JLPTN3ResourcesApp.swift */,
 				A002 /* ContentView.swift */,
 				A016 /* Theme.swift */,
+				A046 /* SharedStore.swift */,
+				A047 /* JLPTN3Resources.entitlements */,
 				A017 /* MockExamData.swift */,
 				A030 /* N3ExampleData.swift */,
 				A031 /* ReadingData.swift */,
@@ -154,17 +186,44 @@
 			buildPhases = (
 				SOURCEPHASE /* Sources */,
 				RESOURCEPHASE /* Resources */,
+				EMBEDPHASE /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				WIDGETDEP /* PBXTargetDependency */,
 			);
 			name = JLPTN3Resources;
 			productName = JLPTN3Resources;
 			productReference = PROD /* JLPTN3Resources.app */;
 			productType = "com.apple.product-type.application";
 		};
+		WIDGETTARGET /* JLPTN3Widget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = WIDGETCONFIGLIST /* Build configuration list for PBXNativeTarget "JLPTN3Widget" */;
+			buildPhases = (
+				WIDGETSOURCES /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JLPTN3Widget;
+			productName = JLPTN3Widget;
+			productReference = WIDGETPROD /* JLPTN3Widget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		WIDGETPROXY /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PROJECT /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = WIDGETTARGET;
+			remoteInfo = JLPTN3Widget;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXProject section */
 		PROJECT /* Project object */ = {
@@ -175,6 +234,9 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					TARGET = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					WIDGETTARGET = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -193,9 +255,24 @@
 			projectRoot = "";
 			targets = (
 				TARGET /* JLPTN3Resources */,
+				WIDGETTARGET /* JLPTN3Widget */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EMBEDPHASE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				WEMBED /* JLPTN3Widget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		RESOURCEPHASE /* Resources */ = {
@@ -215,6 +292,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B001 /* JLPTN3ResourcesApp.swift in Sources */,
+				B046 /* SharedStore.swift in Sources */,
 				B002 /* ContentView.swift in Sources */,
 				B016 /* Theme.swift in Sources */,
 				B017 /* MockExamData.swift in Sources */,
@@ -251,7 +329,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		WIDGETSOURCES /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				W050 /* StudyWidget.swift in Sources */,
+				W051 /* StudyIntents.swift in Sources */,
+				W046 /* SharedStore.swift in Sources */,
+				W009 /* LearningCard.swift in Sources */,
+				W010 /* N3ContentData.swift in Sources */,
+				W011 /* LearningStore.swift in Sources */,
+				W016 /* Theme.swift in Sources */,
+				W043 /* JLPTVocabularyData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		WIDGETDEP /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = WIDGETTARGET /* JLPTN3Widget */;
+			targetProxy = WIDGETPROXY /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		PROJDEBUG /* Debug */ = {
@@ -374,6 +475,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = JLPTN3Resources/JLPTN3Resources.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -403,6 +505,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = JLPTN3Resources/JLPTN3Resources.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -427,6 +530,60 @@
 			};
 			name = Release;
 		};
+		WIDGETDEBUG /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = JLPTN3Widget/JLPTN3Widget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QGAQ3AY3R3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = JLPTN3Widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "N3 학습";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gaebaljari.JLPTN3Resources.JLPTN3Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		WIDGETRELEASE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = JLPTN3Widget/JLPTN3Widget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QGAQ3AY3R3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = JLPTN3Widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "N3 학습";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gaebaljari.JLPTN3Resources.JLPTN3Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -444,6 +601,15 @@
 			buildConfigurations = (
 				TARGETDEBUG /* Debug */,
 				TARGETRELEASE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		WIDGETCONFIGLIST /* Build configuration list for PBXNativeTarget "JLPTN3Widget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				WIDGETDEBUG /* Debug */,
+				WIDGETRELEASE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

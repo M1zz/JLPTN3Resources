@@ -169,7 +169,11 @@ final class LearningStore: ObservableObject {
     // 1. 오늘 만기된 복습 카드 (간격이 짧은 것 우선)
     // 2. 신규 카드 (하루 최대 10장, 어휘/문법 교차)
 
-    func buildSession(newLimit: Int = 10) -> [LearningCard] {
+    /// 하루에 새로 꺼내는 카드 수 — 앱 화면과 위젯이 같은 값을 써야 숫자가 어긋나지 않는다
+    static let dailyNewLimit = 10
+    var dailyNewLimit: Int { LearningStore.dailyNewLimit }
+
+    func buildSession(newLimit: Int = LearningStore.dailyNewLimit) -> [LearningCard] {
         let reviewBatch = dueCards
         let newBatch = buildInterleavedNewCards(limit: newLimit)
 
@@ -244,15 +248,39 @@ final class LearningStore: ObservableObject {
 
     private func save() {
         if let data = try? JSONEncoder().encode(cards) {
-            UserDefaults.standard.set(data, forKey: cardsKey)
+            SharedStore.defaults.set(data, forKey: cardsKey)
         }
         if let data = try? JSONEncoder().encode(stats) {
-            UserDefaults.standard.set(data, forKey: statsKey)
+            SharedStore.defaults.set(data, forKey: statsKey)
         }
+        publishWidgetSnapshot()
+    }
+
+    /// 위젯이 읽을 요약을 갱신하고 새로 그리게 한다.
+    /// 위젯이 카드 2,798장을 훑지 않도록, 보여 줄 것만 미리 적어 둔다.
+    func publishWidgetSnapshot(revealed: Bool = false) {
+        let next = nextCardForWidget
+        // 오늘 몫만 센다. 미학습 2,798장을 그대로 보여 주면 위젯에
+        // 「2,798장 남음」이 뜨고, 앱 화면(오늘 10장)과 숫자가 어긋난다.
+        SharedStore.writeSnapshot(.init(dueCount: dueCards.count,
+                                        newCount: min(newCards.count, dailyNewLimit),
+                                        todayReviewed: stats.todayReviewed,
+                                        streak: stats.streak,
+                                        cardID: next?.id,
+                                        front: next?.front,
+                                        reading: next?.reading,
+                                        meaning: next?.meaning,
+                                        revealed: revealed))
+        SharedStore.reloadWidgets()
+    }
+
+    /// 위젯에 낼 다음 한 장 — 복습이 밀린 것부터, 없으면 새 카드
+    var nextCardForWidget: LearningCard? {
+        dueCards.first ?? buildInterleavedNewCards(limit: 1).first
     }
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: cardsKey),
+        if let data = SharedStore.defaults.data(forKey: cardsKey),
            let decoded = try? JSONDecoder().decode([LearningCard].self, from: data) {
             // 저장된 배열을 그대로 쓰면 안 된다.
             // 그러면 어휘장에 카드를 더해도 이미 앱을 켠 적 있는 사람에게는 영영 보이지 않고,
@@ -270,7 +298,7 @@ final class LearningStore: ObservableObject {
                 return merged
             }
         }
-        if let data = UserDefaults.standard.data(forKey: statsKey),
+        if let data = SharedStore.defaults.data(forKey: statsKey),
            let decoded = try? JSONDecoder().decode(LearningStats.self, from: data) {
             stats = decoded
         }

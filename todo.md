@@ -305,6 +305,37 @@
 - 부수 효과: 세션 정답 수는 .good/.easy만 세므로, 이제 «뜻만 안다»는 정답으로 치지 않는다
   (인출이 끝까지 간 것만 맞은 것으로 본다)
 
+## 완료 (위젯 · 잠금화면)
+- [x] JLPTN3Widget 익스텐션 타깃 신설 (2026-08-12)
+  - project.pbxproj를 직접 편집해 타깃 추가 (PBXNativeTarget / CopyFiles(PlugIns) 임베드 /
+    TargetDependency + ContainerItemProxy / XCConfigurationList)
+  - 위젯이 컴파일하는 소스는 최소한으로: SharedStore · LearningCard · N3ContentData ·
+    JLPTVocabularyData · LearningStore · Theme
+- [x] SharedStore.swift — App Group(group.com.gaebaljari.JLPTN3Resources) 공용 저장소
+  - 위젯은 다른 프로세스라 UserDefaults.standard를 나눠 쓸 수 없다
+  - 세 스토어(LearningStore·PracticeStore·VocabNoteStore)를 공용 저장소로 옮기고,
+    기존 standard 데이터를 처음 한 번 옮겨 오는 마이그레이션을 넣음
+  - App Group을 못 쓰는 상황에서는 standard로 물러난다 (앱은 그대로 동작)
+- [x] 홈 화면 위젯 (systemSmall / systemMedium)
+  - 남은 장수 + 다음 낱말. Medium에서는 «뜻 보기 → 몰랐다 / 알았다»로 채점까지
+- [x] 잠금화면 위젯 (accessoryCircular / accessoryRectangular / accessoryInline)
+  - 동그라미: 남은 장수 · 네모: 낱말 + 채점 버튼 · 한 줄: 남은 장수와 낱말
+- [x] StudyIntents.swift — iOS 17 인터랙티브 위젯 (앱을 열지 않고 위젯 안에서 채점)
+  - 채점은 앱과 같은 LearningStore로 SM-2를 그대로 태운다 (따로 계산하면 진도가 어긋남)
+- [x] 딥링크 jlptn3://study — 위젯을 누르면 학습 세션이 바로 열린다
+  (LearningHomeView.onOpenURL → buildSession)
+- [x] 위젯은 스냅샷만 읽는다 — 카드 2,798장을 위젯에서 훑으면 메모리 한도(~30MB)에 걸린다
+  앱이 저장할 때마다 «남은 장수 · 다음 카드»만 적어 둔다
+- [x] 검증: 두 타깃 빌드 성공, .appex가 PlugIns에 임베드됨,
+  앱·위젯 바이너리 양쪽에 application-groups entitlement 확인,
+  시뮬레이터 App Group 컨테이너에 마이그레이션·진도·스냅샷이 실제로 쓰이는 것 확인
+
+## 리팩터링
+- [x] Color(hex:)를 Resource.swift(자료 목록 데이터) → Theme.swift로 이동
+  위젯 타깃이 쓰지도 않는 자료 데이터까지 컴파일해야 했다
+- [x] 하루 신규 카드 수를 LearningStore.dailyNewLimit 한 곳으로
+  위젯이 미학습 2,798장을 그대로 세어 「2,798장 남음」이 떴다 (앱 화면은 10장)
+
 ## 학습과학 설계 원칙
 - 간격반복 (Spaced Repetition): SM-2 알고리즘
 - 교차 학습 (Interleaved Practice): 어휘/문법 섞어서 복습

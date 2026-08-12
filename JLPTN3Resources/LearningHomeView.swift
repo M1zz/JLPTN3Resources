@@ -13,6 +13,14 @@ struct LearningHomeView: View {
 
     private var totalToday: Int { store.dueCards.count + min(store.newCards.count, 10) }
 
+    /// 위젯·잠금화면에서 «학습하러 가기»를 눌렀을 때 세션을 바로 연다
+    private func startSessionFromWidget() {
+        guard sessionItem == nil else { return }        // 이미 열려 있으면 그대로 둔다
+        let cards = store.buildSession()
+        guard !cards.isEmpty else { return }
+        sessionItem = SessionItem(cards: cards)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
@@ -29,6 +37,11 @@ struct LearningHomeView: View {
             .fullScreenCover(item: $sessionItem) { item in
                 StudySessionView(cards: item.cards, store: store)
             }
+            .onOpenURL { url in
+                guard url.scheme == "jlptn3", url.host == "study" else { return }
+                startSessionFromWidget()
+            }
+            .onAppear { store.publishWidgetSnapshot() }
         }
     }
 

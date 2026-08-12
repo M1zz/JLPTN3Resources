@@ -29,7 +29,8 @@ struct StudySessionView: View {
     @ObservedObject var store: LearningStore
 
     @State private var currentIndex: Int = 0
-    @State private var isFlipped: Bool = false
+    /// 이 카드에서 고른 보기 (nil = 아직 안 고름). 고르는 순간 정답이 열린다.
+    @State private var picked: Int? = nil
     @State private var dragOffset: CGSize = .zero
     @State private var isAnimating: Bool = false
     @State private var sessionFinished: Bool = false
@@ -59,12 +60,9 @@ struct StudySessionView: View {
                     Spacer()
                     cardArea
                     Spacer()
-                    if isFlipped {
+                    if picked != nil {
                         ratingButtons
                             .transition(.move(edge: .bottom).combined(with: .opacity))
-                    } else {
-                        revealHint
-                            .transition(.opacity)
                     }
                     Spacer(minLength: 24)
                 }
@@ -138,58 +136,154 @@ struct StudySessionView: View {
     }
 
     // MARK: - Card Area
+    //
+    // 인출로 시작한다: 문제 → (고르면) 정답 확인 → 4단계 평가.
+    // 문제 화면에는 읽기(히라가나)도, 뜻도, 음성도 주지 않는다.
+
+    private var question: RetrievalQuestion? {
+        currentCard.map { RetrievalQuestion.make(for: $0) }
+    }
 
     private var cardArea: some View {
-        ZStack {
-            if let card = currentCard {
-                // Back face
-                if isFlipped {
-                    CardBackView(card: card, onSpeak: { speech.speak(card.front) })
-                        .rotation3DEffect(.degrees(0), axis: (x: 0, y: 1, z: 0))
-                        .transition(.asymmetric(
-                            insertion: .identity,
-                            removal: .identity
-                        ))
-                }
-                // Front face
-                if !isFlipped {
-                    CardFrontView(card: card, onSpeak: { speech.speak(card.front) })
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 14) {
+                if let card = currentCard, let q = question {
+                    questionCard(q)
+                    choiceList(q)
+                    if picked != nil {
+                        answerCard(card, q)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 4)
         }
-        .padding(.horizontal, 20)
-        .onTapGesture {
-            guard !isFlipped else { return }
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                isFlipped = true
+    }
+
+    /// 문제 — 예문 빈칸이면 문장만, 예문이 없으면 뜻만 준다
+    private func questionCard(_ q: RetrievalQuestion) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(q.kind == .cloze ? "빈칸에 알맞은 것은?" : "이 뜻을 가진 낱말은?")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Theme.textTertiary)
+
+            if q.kind == .cloze, let sentence = q.sentence {
+                // 한자 위에 읽기를 얹는다 — 문장을 못 읽으면 빈칸 문제가 성립하지 않는다.
+                // 정답이 들어갈 자리는 «＿＿＿»이라 읽기가 새지 않는다.
+                FuriganaText(text: sentence, size: 20)
+            } else {
+                Text(q.meaning)
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .onAppear {
-            if let card = currentCard {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    speech.speak(card.front)
-                }
-            }
-        }
-        .onChange(of: currentIndex) { _ in
-            if let card = currentCard {
-                speech.speak(card.front)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(Theme.backgroundElevated)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private func choiceList(_ q: RetrievalQuestion) -> some View {
+        VStack(spacing: 8) {
+            ForEach(Array(q.choices.enumerated()), id: \.offset) { i, choice in
+                choiceRow(q, index: i, text: choice)
             }
         }
     }
 
-    // MARK: - Reveal Hint
+    private func choiceRow(_ q: RetrievalQuestion, index: Int, text: String) -> some View {
+        let isAnswer = index == q.answerIndex
+        let isPicked = picked == index
+        let decided = picked != nil
+        let tint: Color = decided
+            ? (isAnswer ? Color(accentHex: "16A34A")
+                        : (isPicked ? Color(accentHex: "DC2626") : Theme.textTertiary))
+            : Theme.textPrimary
 
-    private var revealHint: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "hand.tap")
-                .font(.system(size: 20))
-                .foregroundStyle(Theme.textTertiary)
-            Text("카드를 탭하면 정답 확인")
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.textTertiary)
+        return Button {
+            guard picked == nil else { return }
+            withAnimation(.easeInOut(duration: 0.2)) { picked = index }
+            if isAnswer { correctCount += 1 }
+            if let card = currentCard { store.record(cardId: card.id, correct: isAnswer) }
+            // 답을 고른 뒤에야 소리를 들려준다
+            if let card = currentCard { speech.speak(card.front) }
+        } label: {
+            HStack(spacing: 10) {
+                Text(text)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(tint)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 4)
+                if decided, isAnswer {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color(accentHex: "16A34A"))
+                } else if decided, isPicked {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Color(accentHex: "DC2626"))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(decided && (isAnswer || isPicked)
+                        ? tint.opacity(0.12) : Theme.surfaceSoft)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(decided && (isAnswer || isPicked) ? tint.opacity(0.5) : .clear,
+                            lineWidth: 1)
+            )
         }
-        .padding(.bottom, 8)
+        .buttonStyle(.plain)
+        .disabled(picked != nil)
+    }
+
+    /// 정답을 고른 뒤에 비로소 읽기·뜻·예문을 펼친다
+    private func answerCard(_ card: LearningCard, _ q: RetrievalQuestion) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(card.front)
+                    .font(.system(size: 30, weight: .black))
+                    .foregroundStyle(Theme.textPrimary)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                Text(card.reading)
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.textTertiary)
+                Spacer(minLength: 4)
+                Button {
+                    speech.speak(card.front)
+                } label: {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.brand)
+                        .frame(width: 34, height: 34)
+                        .background(Theme.brand.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text(card.meaning)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let ex = N3Examples.sentence(for: card) {
+                Divider().overlay(Theme.stroke)
+                FuriganaText(text: ex.japanese, size: 16)
+                Text(ex.korean)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(Theme.backgroundElevated)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
     // MARK: - Rating Buttons
@@ -214,7 +308,8 @@ struct StudySessionView: View {
         Button {
             guard !isAnimating, let card = currentCard else { return }
             isAnimating = true
-            if rating == .good || rating == .easy { correctCount += 1 }
+            // 정답 수는 인출 문제를 맞혔는지로 센다 (여기서 또 세면 두 번 세어진다).
+            // 자기 평가는 복습 간격을 정하는 데만 쓴다.
             store.rate(cardId: card.id, rating: rating)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
@@ -224,7 +319,7 @@ struct StudySessionView: View {
                         sessionFinished = true
                     } else {
                         currentIndex += 1
-                        isFlipped = false
+                        picked = nil
                     }
                 }
                 isAnimating = false

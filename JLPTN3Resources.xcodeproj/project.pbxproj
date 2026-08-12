@@ -38,6 +38,9 @@
 		B038 /* HighlightableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A038 /* HighlightableText.swift */; };
 		B039 /* VocabNotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A039 /* VocabNotebookView.swift */; };
 		B040 /* ReadingWordBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = A040 /* ReadingWordBank.swift */; };
+		B060 /* StudyLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060 /* StudyLogView.swift */; };
+		B049 /* FuriganaText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A049 /* FuriganaText.swift */; };
+		B048 /* RetrievalQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A048 /* RetrievalQuestion.swift */; };
 		B045 /* ListeningData2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A045 /* ListeningData2.swift */; };
 		B044 /* ReadingData2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A044 /* ReadingData2.swift */; };
 		B043 /* JLPTVocabularyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A043 /* JLPTVocabularyData.swift */; };
@@ -88,6 +91,9 @@
 		A038 /* HighlightableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightableText.swift; sourceTree = "<group>"; };
 		A039 /* VocabNotebookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabNotebookView.swift; sourceTree = "<group>"; };
 		A040 /* ReadingWordBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingWordBank.swift; sourceTree = "<group>"; };
+		A060 /* StudyLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyLogView.swift; sourceTree = "<group>"; };
+		A049 /* FuriganaText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuriganaText.swift; sourceTree = "<group>"; };
+		A048 /* RetrievalQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetrievalQuestion.swift; sourceTree = "<group>"; };
 		A045 /* ListeningData2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningData2.swift; sourceTree = "<group>"; };
 		A044 /* ReadingData2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingData2.swift; sourceTree = "<group>"; };
 		A043 /* JLPTVocabularyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JLPTVocabularyData.swift; sourceTree = "<group>"; };
@@ -152,6 +158,9 @@
 				A038 /* HighlightableText.swift */,
 				A039 /* VocabNotebookView.swift */,
 				A040 /* ReadingWordBank.swift */,
+				A060 /* StudyLogView.swift */,
+				A049 /* FuriganaText.swift */,
+				A048 /* RetrievalQuestion.swift */,
 				A045 /* ListeningData2.swift */,
 				A044 /* ReadingData2.swift */,
 				A043 /* JLPTVocabularyData.swift */,
@@ -307,6 +316,9 @@
 				B038 /* HighlightableText.swift in Sources */,
 				B039 /* VocabNotebookView.swift in Sources */,
 				B040 /* ReadingWordBank.swift in Sources */,
+				B060 /* StudyLogView.swift in Sources */,
+				B049 /* FuriganaText.swift in Sources */,
+				B048 /* RetrievalQuestion.swift in Sources */,
 				B045 /* ListeningData2.swift in Sources */,
 				B044 /* ReadingData2.swift in Sources */,
 				B043 /* JLPTVocabularyData.swift in Sources */,

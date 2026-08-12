@@ -95,7 +95,42 @@ struct LearningCard: Identifiable, Codable {
     var nextReviewDate: Date = .distantPast
     var learningStep: Int = 0       // 0=신규, 1=학습 중, 2=졸업
 
+    /// 마지막 인출 문제를 맞혔는지. 아직 풀지 않았으면 nil.
+    /// 자기 평가(찍음/뜻만/…)와 달리 «객관적으로 맞았는지»를 남긴다 — 학습 현황의 근거.
+    /// 예전 판에는 없던 항목이라 optional (옛 기록을 그대로 읽어들이기 위해)
+    var lastCorrect: Bool? = nil
+
     var isNew: Bool { repetitions == 0 && learningStep == 0 }
+
+    /// 학습 현황 화면에서 쓰는 구분
+    enum Progress {
+        case untouched   // 아직 공부 안 함
+        case correct     // 마지막에 맞힘
+        case wrong       // 마지막에 틀림
+        case studied     // 공부는 했지만 인출 기록이 없음 (기록 기능 이전에 본 카드)
+    }
+
+    var progress: Progress {
+        if let last = lastCorrect { return last ? .correct : .wrong }
+        return isNew ? .untouched : .studied
+    }
+
+    /// 습득 정도 — 「알게 된 것 / 아직 습득 못한 것 / 앞으로 알아야 할 것」
+    ///
+    /// 「마지막에 맞혔나」와는 다르다. 한 번 맞힌 것은 다음 날 잊을 수 있으므로,
+    /// 일주일 넘는 간격을 견딘 카드(interval >= 7)만 «알게 된 것»으로 본다.
+    /// 그러다 최근에 틀렸다면 다시 «습득 못한 것»으로 내려온다.
+    enum Mastery {
+        case acquired   // 알게 된 것
+        case learning   // 아직 습득 못한 것 (보고는 있으나 굳지 않음)
+        case upcoming   // 앞으로 알아야 할 것 (아직 안 본 것)
+    }
+
+    var mastery: Mastery {
+        if isNew { return .upcoming }
+        if interval >= 7, lastCorrect != false { return .acquired }
+        return .learning
+    }
     var isDue: Bool { nextReviewDate <= Date() }
 
     var statusLabel: String {

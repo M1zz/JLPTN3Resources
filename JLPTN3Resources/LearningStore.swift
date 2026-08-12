@@ -213,6 +213,13 @@ final class LearningStore: ObservableObject {
 
     // MARK: - Rating
 
+    /// 인출 문제의 정오를 남긴다 (자기 평가와 별개로, 객관적인 기록)
+    func record(cardId: String, correct: Bool) {
+        guard let idx = cards.firstIndex(where: { $0.id == cardId }) else { return }
+        cards[idx].lastCorrect = correct
+        save()
+    }
+
     func rate(cardId: String, rating: SRSRating) {
         guard let idx = cards.firstIndex(where: { $0.id == cardId }) else { return }
         applySchedule(card: &cards[idx], rating: rating)

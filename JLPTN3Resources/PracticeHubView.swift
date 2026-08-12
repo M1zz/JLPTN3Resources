@@ -10,6 +10,15 @@ struct PracticeHubView: View {
     /// 단어장은 이 자리에서 한 번만 만들어 독해 화면과 나눠 쓴다.
     /// 화면마다 새로 만들면 한쪽에서 담은 단어가 다른 쪽에 바로 비치지 않는다.
     @EnvironmentObject private var notes: VocabNoteStore
+    @EnvironmentObject private var learning: LearningStore
+
+    /// 카드에 적을 한 줄 요약 — 틀린 것이 있으면 그것부터 알린다
+    private var studyLogDetail: String {
+        let acquired = learning.cards.filter { $0.mastery == .acquired }.count
+        let learningCount = learning.cards.filter { $0.mastery == .learning }.count
+        if acquired == 0 && learningCount == 0 { return "아직 시작하지 않았습니다" }
+        return "알게 됨 \(acquired)개 · 습득 못함 \(learningCount)개"
+    }
 
     var body: some View {
         NavigationStack {
@@ -50,6 +59,17 @@ struct PracticeHubView: View {
                                  subtitle: "課題理解 · ポイント理解 · 概要理解 · 発話表現 · 即時応答",
                                  detail: "\(practice.listeningTotal)문항 · 음성 재생",
                                  progress: ratio(practice.listeningSolved, practice.listeningTotal))
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink {
+                            StudyLogView()
+                        } label: {
+                            card(icon: "checklist",
+                                 title: "학습 현황",
+                                 subtitle: "알게 된 것 · 습득 못한 것 · 앞으로 알아야 할 것",
+                                 detail: studyLogDetail,
+                                 progress: nil)
                         }
                         .buttonStyle(.plain)
 

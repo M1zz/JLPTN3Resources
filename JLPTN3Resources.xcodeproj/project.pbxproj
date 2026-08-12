@@ -38,6 +38,7 @@
 		B038 /* HighlightableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A038 /* HighlightableText.swift */; };
 		B039 /* VocabNotebookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A039 /* VocabNotebookView.swift */; };
 		B040 /* ReadingWordBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = A040 /* ReadingWordBank.swift */; };
+		B061 /* LicenseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A061 /* LicenseView.swift */; };
 		B060 /* StudyLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060 /* StudyLogView.swift */; };
 		B049 /* FuriganaText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A049 /* FuriganaText.swift */; };
 		B048 /* RetrievalQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A048 /* RetrievalQuestion.swift */; };
@@ -91,6 +92,7 @@
 		A038 /* HighlightableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightableText.swift; sourceTree = "<group>"; };
 		A039 /* VocabNotebookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabNotebookView.swift; sourceTree = "<group>"; };
 		A040 /* ReadingWordBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingWordBank.swift; sourceTree = "<group>"; };
+		A061 /* LicenseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicenseView.swift; sourceTree = "<group>"; };
 		A060 /* StudyLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyLogView.swift; sourceTree = "<group>"; };
 		A049 /* FuriganaText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuriganaText.swift; sourceTree = "<group>"; };
 		A048 /* RetrievalQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetrievalQuestion.swift; sourceTree = "<group>"; };
@@ -158,6 +160,7 @@
 				A038 /* HighlightableText.swift */,
 				A039 /* VocabNotebookView.swift */,
 				A040 /* ReadingWordBank.swift */,
+				A061 /* LicenseView.swift */,
 				A060 /* StudyLogView.swift */,
 				A049 /* FuriganaText.swift */,
 				A048 /* RetrievalQuestion.swift */,
@@ -316,6 +319,7 @@
 				B038 /* HighlightableText.swift in Sources */,
 				B039 /* VocabNotebookView.swift in Sources */,
 				B040 /* ReadingWordBank.swift in Sources */,
+				B061 /* LicenseView.swift in Sources */,
 				B060 /* StudyLogView.swift in Sources */,
 				B049 /* FuriganaText.swift in Sources */,
 				B048 /* RetrievalQuestion.swift in Sources */,
@@ -496,6 +500,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "N3 학습";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -526,6 +531,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "N3 학습";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

@@ -169,10 +169,24 @@ struct PracticeHubView: View {
     }
 
     private var note: some View {
-        Text("지문·대본·문항은 모두 자체 제작입니다. 실제 기출문제는 저작권 때문에 실을 수 없습니다.")
-            .font(.system(size: 11))
-            .foregroundStyle(Theme.textQuaternary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, 4)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("지문·대본·문항은 모두 자체 제작입니다. 실제 기출문제는 저작권 때문에 실을 수 없습니다.")
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textQuaternary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            // 어휘(JMdict)·획순(KanjiVG) 데이터가 CC BY-SA라 출처를 밝혀야 한다
+            NavigationLink {
+                LicenseView()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 10))
+                    Text("라이선스 · 출처")
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundStyle(Theme.brand)
+            }
+        }
+        .padding(.top, 4)
     }
 }
